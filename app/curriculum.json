@@ -1,0 +1,315 @@
+[
+  {
+    "id": "ml-01",
+    "minutes": 8,
+    "title": "Intro, readiness, Plan",
+    "mode": "guided",
+    "body": "> Plan only: predict each customer's net spend during the next 90 days using synthetic transactions in HOL_SANDBOX.SOURCE. Writes must stay in HOL_SANDBOX.P001 using HOL_EXAMPLE_WH. Explain temporal feature/label boundaries, evaluation, registration, batch inference, and monitoring. Do not execute or provision compute.\n\nExpected/check: plan explicitly separates train/evaluation/scoring windows and excludes future features. Recovery: prepared plan.",
+    "technologies": [
+      {
+        "name": "Cortex Code",
+        "icon": "smart_toy",
+        "description": "The AI coding agent that plans and runs ML work in Snowflake with you"
+      },
+      {
+        "name": "Plan mode",
+        "icon": "map",
+        "description": "Review the full modeling approach before any data is touched"
+      }
+    ],
+    "situation": "Your retail team wants to predict each customer's spend over the next 90 days. Before training anything, you'll have the agent lay out how it will avoid leaking future data into the model.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Look for three separate windows in the plan: features, labels and scoring. If they blur together, push back."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "Point-in-time correctness",
+        "definition": "Features may use only data from before the prediction cutoff."
+      },
+      {
+        "term": "Plan mode",
+        "definition": "The agent proposes; you approve. Nothing runs until you do."
+      }
+    ],
+    "built": [
+      "A reviewed modeling plan with explicit time boundaries"
+    ],
+    "prompts": [
+      {
+        "id": "ml-01-p1",
+        "text": "Plan only: predict each customer's net spend during the next 90 days using synthetic transactions in HOL_SANDBOX.SOURCE. Writes must stay in HOL_SANDBOX.P001 using HOL_EXAMPLE_WH. Explain temporal feature/label boundaries, evaluation, registration, batch inference, and monitoring. Do not execute or provision compute."
+      }
+    ]
+  },
+  {
+    "id": "ml-02",
+    "minutes": 8,
+    "title": "Custom ML-conventions skill",
+    "mode": "hands-on",
+    "body": "> Use the bundled machine-learning guidance for product APIs. Create a skill named hol-ml-review that adds only our team's gates:\n> 1. Fixed seed, recorded dataset dates and version.\n> 2. Features come before the snapshot cutoff; labels cover the following 90 days and must be fully observed.\n> 3. Temporal holdout with overlapping label windows purged. Fit preprocessing on training data only. No future outcomes or identifiers as predictors.\n> 4. Compare a small baseline with the candidate on MAE and RMSE. Don't tune on the final holdout.\n> 5. Register the exact feature signature, metrics and data metadata; verify warehouse inference.\n> 6. Drift needs baseline data and performance needs ground truth; report pending or insufficient data honestly.\n> 7. Writes stay in HOL_SANDBOX.P001. Stop before new compute, grants, deployment or external sharing.\n>\n> Then review the design before training.\n\nExpected/check: custom skill adds team-specific gates without copying the whole bundled ML workflow. Recovery: edit one rule in the prepared skill. Explain SKILL.md frontmatter, workflow, and optional resource files.",
+    "technologies": [
+      {
+        "name": "Custom skill",
+        "icon": "extension",
+        "description": "Your team's ML conventions, packaged so the agent applies them every time"
+      },
+      {
+        "name": "Bundled ML skill",
+        "icon": "inventory_2",
+        "description": "Snowflake's guidance for training, registry and inference APIs"
+      }
+    ],
+    "situation": "Two data scientists built similar models last quarter with different splits, metrics and seeds, and nobody could compare them. You'll encode the team's rules once.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Your skill should add team rules, not re-explain Snowflake ML. Let the bundled skill cover the APIs."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "SKILL.md",
+        "definition": "A name, a description that tells the agent when to use it, and a short workflow."
+      },
+      {
+        "term": "Team gates",
+        "definition": "Checks the skill enforces before training: seed, temporal holdout, metric choice."
+      }
+    ],
+    "built": [
+      "A hol-ml-review skill with your team's modeling gates"
+    ],
+    "prompts": [
+      {
+        "id": "ml-02-p1",
+        "text": "Use the bundled machine-learning guidance for product APIs. Create a skill named hol-ml-review that adds only our team's gates:\n1. Fixed seed, recorded dataset dates and version.\n2. Features come before the snapshot cutoff; labels cover the following 90 days and must be fully observed.\n3. Temporal holdout with overlapping label windows purged. Fit preprocessing on training data only. No future outcomes or identifiers as predictors.\n4. Compare a small baseline with the candidate on MAE and RMSE. Don't tune on the final holdout.\n5. Register the exact feature signature, metrics and data metadata; verify warehouse inference.\n6. Drift needs baseline data and performance needs ground truth; report pending or insufficient data honestly.\n7. Writes stay in HOL_SANDBOX.P001. Stop before new compute, grants, deployment or external sharing.\n\nThen review the design before training."
+      }
+    ]
+  },
+  {
+    "id": "ml-03",
+    "minutes": 8,
+    "title": "Inspect data and point-in-time features",
+    "mode": "hands-on",
+    "body": "> Inspect the prepared dataset's schema and counts. Show three customer snapshots with feature cutoff and label-end timestamps. Confirm no predictor uses transactions from its label window, and that the evaluation window is fully observed. Create the approved small feature dataset only in my sandbox schema.\n\nExpected/check: data window checks, explicit feature list, zero-spend outcomes retained, no leakage. Recovery: precomputed feature checkpoint with the same documented boundaries.",
+    "technologies": [
+      {
+        "name": "Snowflake SQL",
+        "icon": "database",
+        "description": "Inspect schema, counts and time windows directly in the warehouse"
+      },
+      {
+        "name": "Feature snapshots",
+        "icon": "timeline",
+        "description": "One row per customer per cutoff date, with features before and labels after"
+      }
+    ],
+    "situation": "The transaction history is in HOL_SANDBOX.SOURCE. Before modeling, you'll confirm exactly which events each feature and label can see.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Ask for three example customers with their cutoff and label-end timestamps. Concrete rows catch leakage that summaries hide."
+      },
+      {
+        "kind": "warning",
+        "text": "Keep zero-spend customers. Dropping them makes the model look better and predict worse."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "Label window",
+        "definition": "Spend in [cutoff, cutoff + 90 days). Only windows fully observed before the data ends are usable."
+      },
+      {
+        "term": "Leakage",
+        "definition": "Any predictor that uses information from the label window."
+      }
+    ],
+    "built": [
+      "A leakage-checked feature dataset in your sandbox schema"
+    ],
+    "prompts": [
+      {
+        "id": "ml-03-p1",
+        "text": "Inspect the prepared dataset's schema and counts. Show three customer snapshots with feature cutoff and label-end timestamps. Confirm no predictor uses transactions from its label window, and that the evaluation window is fully observed. Create the approved small feature dataset only in my sandbox schema."
+      }
+    ]
+  },
+  {
+    "id": "ml-04",
+    "minutes": 14,
+    "title": "Train and evaluate regression",
+    "mode": "hands-on",
+    "body": "> Train a small regression baseline and one candidate using the approved temporal split. Use fixed random seeds and bounded model size. Evaluate MAE and RMSE, show the comparison against the baseline, and explain errors. Do not tune on the final holdout or provision a compute pool.\n\nExpected/check: actual metrics, training/evaluation row counts and dates, no train/holdout overlap. Recovery: use the rehearsed model artifact, clearly label it prepared and retain its version and evaluation record. In Snowsight, verify the notebook kernel before running cells; use dedicated notebook tools when available.",
+    "technologies": [
+      {
+        "name": "Snowflake ML",
+        "icon": "model_training",
+        "description": "Train models close to the data with fixed seeds and bounded size"
+      },
+      {
+        "name": "Regression metrics",
+        "icon": "monitoring",
+        "description": "MAE and RMSE compared against a simple baseline"
+      }
+    ],
+    "situation": "You have clean features. Now find out whether a real model beats a simple baseline, honestly, on later data it hasn't seen.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Always compare against the baseline. A model that barely beats \"predict last quarter's spend\" may not be worth deploying."
+      },
+      {
+        "kind": "warning",
+        "text": "Don't tune on the final holdout. Once you do, it stops being a fair test."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "Temporal split",
+        "definition": "Train on earlier snapshots, evaluate on later ones, so the test mirrors real use."
+      },
+      {
+        "term": "MAE vs. RMSE",
+        "definition": "MAE is the typical error in dollars; RMSE punishes large misses more."
+      }
+    ],
+    "built": [
+      "A trained candidate model with honest held-out metrics"
+    ],
+    "prompts": [
+      {
+        "id": "ml-04-p1",
+        "text": "Train a small regression baseline and one candidate using the approved temporal split. Use fixed random seeds and bounded model size. Evaluate MAE and RMSE, show the comparison against the baseline, and explain errors. Do not tune on the final holdout or provision a compute pool."
+      }
+    ]
+  },
+  {
+    "id": "ml-05",
+    "minutes": 9,
+    "title": "Registry and warehouse batch inference",
+    "mode": "hands-on",
+    "body": "> Register the selected model in HOL_SANDBOX.P001 with evaluation metrics, data seed/date range, feature signature, and intended WAREHOUSE target. Run batch predictions through the registered version on a small scoring cohort. Save IDs, snapshot timestamps, model/version, features, and predictions in a sandbox table.\n\nExpected/check: model is visible in the Registry, metric metadata matches evaluated results, warehouse inference succeeds, output cardinality and finite predictions are checked. Recovery: run the prepared registered version; never report a locally computed prediction as warehouse inference.",
+    "technologies": [
+      {
+        "name": "Model Registry",
+        "icon": "inventory",
+        "description": "Versioned models with metrics and signatures, governed like other Snowflake objects"
+      },
+      {
+        "name": "Warehouse inference",
+        "icon": "bolt",
+        "description": "Batch predictions run inside Snowflake on a warehouse"
+      }
+    ],
+    "situation": "The model works. Now register it so others can find it, see how it was evaluated, and score customers without moving data out of Snowflake.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Log metrics, seed and data date range with the version. Six months from now that metadata is the only record of where the model came from."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "Model version",
+        "definition": "An immutable registered artifact with its own metrics and inference signature."
+      },
+      {
+        "term": "Batch inference",
+        "definition": "Scoring a table of customers through the registered version on a warehouse."
+      }
+    ],
+    "built": [
+      "A registered model version and a sandbox table of predictions"
+    ],
+    "prompts": [
+      {
+        "id": "ml-05-p1",
+        "text": "Register the selected model in HOL_SANDBOX.P001 with evaluation metrics, data seed/date range, feature signature, and intended WAREHOUSE target. Run batch predictions through the registered version on a small scoring cohort. Save IDs, snapshot timestamps, model/version, features, and predictions in a sandbox table."
+      }
+    ]
+  },
+  {
+    "id": "ml-06",
+    "minutes": 8,
+    "title": "Monitoring setup and UI",
+    "mode": "guided/demo",
+    "body": "> Configure a model-version monitor for the registered regression version using our historical scoring table and baseline. Include prediction and actual numeric score columns and TIMESTAMP_NTZ event times. Inspect the current drift and MAE/RMSE metrics, compare to the approved numeric thresholds, and summarize breached/not breached/insufficient data. Show the monitor in Snowsight.\n\nPrepare during T-3: baseline and shifted historical cohorts spanning multiple days, fully observed labels, an actual model monitor and populated UI. Example teaching thresholds are PSI > 0.20 and MAE > 1.20 times baseline MAE; label them illustrative, define columns/time windows, and compute real values. If baseline MAE is zero, do not divide by zero: use an approved absolute threshold or mark comparison undefined.\n\nCurrent model-version monitors require daily aggregation and valid numeric predictions/actuals; ground truth is required for performance metrics and baseline for drift. Do not assume a generic `accuracy` metric or an arbitrary `set_threshold()` method exists. Threshold comparison can be explicit queries; alert configuration is separate. A newly created monitor may not have refreshed: show `pending` and demonstrate the rehearsed reference monitor, not fabricated successful metrics. Display the last refresh/time window in the UI walkthrough.",
+    "technologies": [
+      {
+        "name": "Model monitor",
+        "icon": "query_stats",
+        "description": "Tracks drift and accuracy for a registered model version over time"
+      },
+      {
+        "name": "Snowsight ML UI",
+        "icon": "dashboard",
+        "description": "View drift and performance charts for the monitored version"
+      }
+    ],
+    "situation": "Customer behavior shifts after a promotion. You need to know when the model's predictions drift or its error grows, before the business notices.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Monitors need history: a baseline for drift and actual outcomes for accuracy. A brand-new monitor may show pending until it refreshes."
+      },
+      {
+        "kind": "warning",
+        "text": "The thresholds here (PSI > 0.20, MAE > 1.2x baseline) are teaching examples. Agree real ones with the business."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "Drift",
+        "definition": "A change in the distribution of inputs or predictions compared to a baseline (e.g. PSI)."
+      },
+      {
+        "term": "Performance monitoring",
+        "definition": "Comparing predictions to actual outcomes once they arrive (MAE, RMSE)."
+      }
+    ],
+    "built": [
+      "A model monitor reviewed in the Snowsight UI"
+    ],
+    "prompts": [
+      {
+        "id": "ml-06-p1",
+        "text": "Configure a model-version monitor for the registered regression version using our historical scoring table and baseline. Include prediction and actual numeric score columns and TIMESTAMP_NTZ event times. Inspect the current drift and MAE/RMSE metrics, compare to the approved numeric thresholds, and summarize breached/not breached/insufficient data. Show the monitor in Snowsight."
+      }
+    ]
+  },
+  {
+    "id": "ml-07",
+    "minutes": 5,
+    "title": "Recap and optional SPCS path",
+    "mode": "discussion",
+    "body": "Review skill, temporal correctness, registry, inference, and monitoring. Optional follow-on: approved SPCS compute pool, supported model target, authenticated REST endpoint, small bounded request set, p50/p95/p99 measured latency including warm/cold distinctions, and explicit teardown. Never enable a public endpoint or provision SPCS merely for a slide.",
+    "technologies": [
+      {
+        "name": "Recap",
+        "icon": "flag",
+        "description": "Skills, temporal correctness, registry, inference and monitoring"
+      }
+    ],
+    "situation": "You've taken a model from plan to a monitored, production-style pattern. Next is serving it in real time if the business needs it.",
+    "tips": [
+      {
+        "kind": "tip",
+        "text": "Real-time serving (SPCS) is worth it only when batch scoring can't meet the need. Measure latency before promising it."
+      }
+    ],
+    "concepts": [
+      {
+        "term": "SPCS endpoint",
+        "definition": "An optional, authenticated REST service for low-latency predictions, provisioned and torn down deliberately."
+      }
+    ],
+    "built": [
+      "A path from today's batch model to optional real-time serving"
+    ],
+    "prompts": []
+  }
+]

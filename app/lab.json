@@ -1,0 +1,13 @@
+{
+  "title": "Retail Cortex Code ML Lab",
+  "scenario": "Predict each customer's net spend over the next 90 days from synthetic purchase history, then register, score and monitor the model in Snowflake.",
+  "track_label": "ML / Data Scientists",
+  "interface_label": "Desktop",
+  "database": "HOL_SANDBOX",
+  "schema": "P001",
+  "role": "HOL_EXAMPLE_P001",
+  "warehouse": "HOL_EXAMPLE_WH",
+  "zip": "example-org-retail-coco-hol-data.zip",
+  "expected_text": "LOCATIONS 5 rows, CUSTOMERS 500 rows, TRANSACTIONS 50000 rows; NET_SPEND 13683214.77.",
+  "interface_notes": "- Use the **Plan** toggle before multi-step work and keep default approvals on.\n- Project skills live in `.cortex/skills/<name>/SKILL.md` in your project folder.\n- Review every change with Keep/Undo before accepting."
+}
